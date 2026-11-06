@@ -1,0 +1,20 @@
+{
+ "name": "True Care Fertility & Women's Health",
+ "short_name": "True Care",
+ "start_url": "/",
+ "display": "browser",
+ "background_color": "#F8F6F1",
+ "theme_color": "#21362C",
+ "icons": [
+  {
+   "src": "/assets/images/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "/assets/images/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  }
+ ]
+}

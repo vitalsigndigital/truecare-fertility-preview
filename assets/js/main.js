@@ -40,7 +40,8 @@
     var btn = it.querySelector("button");
     var t;
     btn.addEventListener("click", function () {
-      var open = !it.classList.contains("is-open");
+      // With a mouse, hovering has already opened the menu, so a click keeps it open rather than toggling it shut.
+      var open = window.matchMedia("(hover:hover)").matches || !it.classList.contains("is-open");
       closeAll(it); it.classList.toggle("is-open", open); btn.setAttribute("aria-expanded", String(open));
     });
     it.addEventListener("mouseenter", function () { if (window.matchMedia("(hover:hover)").matches) { clearTimeout(t); closeAll(it); it.classList.add("is-open"); btn.setAttribute("aria-expanded", "true"); } });
@@ -132,12 +133,31 @@
       fetch(form.action, { method: "POST", headers: { "Accept": "application/json" }, body: new FormData(form) })
         .then(function (r) { return r.json().then(function (j) { return { ok: r.ok && j.success !== false }; }); })
         .then(function (r) {
-          if (r.ok) { form.reset(); status.className = "form__status is-ok"; status.textContent = "Thank you — your message has been sent. Our reception team will reply by phone or email."; }
+          if (r.ok) { form.reset(); status.className = "form__status is-ok"; status.textContent = form.getAttribute("data-ok") || "Thank you — your message has been sent. Our reception team will reply by phone or email."; }
           else throw new Error();
         })
         .catch(function () { status.className = "form__status is-err"; status.textContent = "Sorry, that didn’t send. Please call (289) 674-9676 or email reception@truecarefertility.ca."; })
         .then(function () { btn.disabled = false; btn.textContent = label; status.setAttribute("tabindex", "-1"); status.focus(); });
     });
+  });
+
+  /* ---------- "What brings you here?" picker: panels are all in the HTML; this turns them into tabs ---------- */
+  [].forEach.call(document.querySelectorAll("[data-picker]"), function (pk) {
+    var opts = [].slice.call(pk.querySelectorAll("[role=tab]")), panels = [].slice.call(pk.querySelectorAll("[role=tabpanel]"));
+    function pick(i, focus) {
+      opts.forEach(function (o, j) { o.setAttribute("aria-selected", j === i ? "true" : "false"); o.tabIndex = j === i ? 0 : -1; });
+      panels.forEach(function (p, j) { p.hidden = j !== i; });
+      if (focus) opts[i].focus();
+    }
+    opts.forEach(function (o, i) {
+      o.addEventListener("click", function () { pick(i); });
+      o.addEventListener("keydown", function (e) {
+        var k = e.key, n = opts.length;
+        if (k === "ArrowDown" || k === "ArrowRight") { e.preventDefault(); pick((i + 1) % n, true); }
+        if (k === "ArrowUp" || k === "ArrowLeft") { e.preventDefault(); pick((i - 1 + n) % n, true); }
+      });
+    });
+    pick(0);
   });
 
   /* ---------- Click-to-load maps ---------- */

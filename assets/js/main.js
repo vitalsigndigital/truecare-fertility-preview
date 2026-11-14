@@ -125,7 +125,7 @@
       if (!window.fetch || !key || /PLACEHOLDER/.test(key.value)) {
         e.preventDefault();
         status.className = "form__status is-err";
-        status.textContent = "Online enquiries are not connected yet. Please call (289) 674-9676 or email reception@truecarefertility.ca.";
+        status.textContent = "Online enquiries are not connected yet. Please call Hamilton (289) 674-9676 or Mississauga (289) 674-9662, or email reception@truecarefertility.ca.";
         return;
       }
       e.preventDefault();
@@ -136,7 +136,7 @@
           if (r.ok) { form.reset(); status.className = "form__status is-ok"; status.textContent = form.getAttribute("data-ok") || "Thank you — your message has been sent. Our reception team will reply by phone or email."; }
           else throw new Error();
         })
-        .catch(function () { status.className = "form__status is-err"; status.textContent = "Sorry, that didn’t send. Please call (289) 674-9676 or email reception@truecarefertility.ca."; })
+        .catch(function () { status.className = "form__status is-err"; status.textContent = "Sorry, that didn’t send. Please call Hamilton (289) 674-9676 or Mississauga (289) 674-9662, or email reception@truecarefertility.ca."; })
         .then(function () { btn.disabled = false; btn.textContent = label; status.setAttribute("tabindex", "-1"); status.focus(); });
     });
   });
@@ -158,6 +158,43 @@
       });
     });
     pick(0);
+  });
+
+  /* ---------- "Which location?" call chooser ----------
+     Generic Call buttons carry data-call and link to /locations/ (works without JS). With JS they open
+     a sheet listing every location's own number; location pages dial their own clinic directly. */
+  var sheet = document.getElementById("callsheet"), sheetFrom = null;
+  function openSheet(from) {
+    if (!sheet) return false;
+    sheetFrom = from; sheet.hidden = false; document.body.style.overflow = "hidden";
+    void sheet.offsetWidth;            /* commit the un-hidden state so the open transition runs */
+    sheet.classList.add("is-open");
+    var first = sheet.querySelector(".callsheet__row"); if (first) first.focus();
+    return true;
+  }
+  function closeSheet() {
+    if (!sheet || sheet.hidden) return;
+    sheet.classList.remove("is-open"); document.body.style.overflow = "";
+    setTimeout(function () { sheet.hidden = true; }, 180);
+    if (sheetFrom) sheetFrom.focus();
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-call]");
+    if (t && sheet) {
+      e.preventDefault();
+      if (t.closest("#drawer")) { closeDrawer(); t = burger || t; }   // return focus to the menu button, not the hidden drawer
+      openSheet(t); return;
+    }
+    if (e.target.closest("[data-call-close]")) closeSheet();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (!sheet || sheet.hidden) return;
+    if (e.key === "Escape") { closeSheet(); return; }
+    if (e.key === "Tab") {   /* keep focus inside the sheet */
+      var f = [].slice.call(sheet.querySelectorAll("a,button")), i = f.indexOf(document.activeElement);
+      if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+    }
   });
 
   /* ---------- Click-to-load maps ---------- */
